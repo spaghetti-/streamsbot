@@ -100,6 +100,15 @@ class Streams:
 		self.cur.execute(cmd)
 		self.con.commit()
 
+	def exists(self, id):
+		#TODO: check if id exists in db, if it does return 0
+		#		if it doesn't return 1
+		#		flipped return codes but w/e
+
+		cmd = 'SELECT * FROM streams WHERE id=' + id
+		self.cur.execute(cmd)
+
+
 temp = Streams()
 temp.truncateTable()
 temp.parser_own3d('http://www.own3d.tv/EpiCommentary/live/311418', 'EpiCommentary')
