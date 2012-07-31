@@ -34,7 +34,9 @@ class Streams:
 		#Some faggots have retarded as fuck titles that need to be cleaned.
 		#sqlite is too fucking retarded to do it on its own as well
 		string = string.replace('"', '')
-		return unicodedata.normalize('NFKD', string).encode('ASCII', 'ignore')
+		if(type(string) == 'unicode'):
+			return unicodedata.normalize('NFKD', string).encode('ASCII', 'ignore')
+		return string
 
 	def import_list(self, fname):
 		#import bobs list of previously added streams so that we don't have to do it again
@@ -61,18 +63,25 @@ class Streams:
 			url = 'http://twitch.tv/' + login
 			print 'Working on ' + login 
 			#cmd = "INSERT INTO streams(id, login, title, url) VALUES(" + id + ",'" + login + "','" + title + ","" + url + "")"
-			cmd = 'INSERT INTO streams(id, login, title, url) VALUES(' + id + ',"' + login + '","' + self.sanitize(title) + '","' + url + '")'
-			print cmd
-			self.cur.execute(cmd)
-			self.con.commit()
+			#cmd = 'INSERT INTO streams(id, login, title, url) VALUES(' + id + ',"' + login + '","' + self.sanitize(title) + '","' + url + '")'
+			self.add_twitch.stream(id, login, title, url)	
 		elif(bs4parser.hash):
 			print bs4parser.hash.error.text
+			return 1
+
 
 		return 0
 
-	def resetTable(self):
+	def parser_own3d(self, url, name):
+		#nothing much to parse since I havent figured out their retarded API
+		#cbb
+		id = url.split("/")[len(url.split("/")) - 1]
+		url = 'http://own3d.tv/live/' + id
+		self.add_own3d_stream(id, name, url)
+
+	def truncateTable(self):
 		drop = 'DROP TABLE streams'
-		create = 'CREATE TABLE streams (id INTEGER PRIMARY KEY, login TEXT, title TEXT, url TEXT, live INT, viewers INT)'
+		create = 'CREATE TABLE streams (id INTEGER PRIMARY KEY, server TEXT, login TEXT, title TEXT, url TEXT, live INT, viewers INT)'
 
 		self.cur.execute(drop)
 		self.con.commit()
@@ -81,9 +90,20 @@ class Streams:
 
 		return 0
 
+	def add_twitch_stream(self, id, login, title, url):
+		cmd = 'INSERT INTO streams(id, server, login, title, url) VALUES(' + id + ', "twitch", "' + login + '","' + self.sanitize(title) + '","' + url + '")'
+		self.cur.execute(cmd)
+		self.con.commit()
 
-
+	def add_own3d_stream(self, id, name, url):
+		cmd = 'INSERT INTO streams(id, server, login, title, url) VALUES(' + id + ', "own3d", "' + id + '","' + self.sanitize(name) + '","' + url + '")'
+		self.cur.execute(cmd)
+		self.con.commit()
 
 temp = Streams()
-temp.import_list('streams.list')
+temp.truncateTable()
+temp.parser_own3d('http://www.own3d.tv/EpiCommentary/live/311418', 'EpiCommentary')
+#temp.truncateTable()
+#temp.add_twitch_stream('99823', 'sing_sing', 'Sing_Sing', 'http://twitch.tv/singsing')
+#temp.import_list('streams.list')
 #temp.parser_twitch('nookiedota')
