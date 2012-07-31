@@ -44,12 +44,24 @@ class Streams:
 			streamer = line.replace(' ', '').split('-')[0]
 			if(re.match('.*=J$', streamer)):
 				print "http://twitch.tv/" + streamer.split('=')[0]
+				#self.parser_twitch(streamer.split('=')[0])
 			elif(re.match('.*=O$', streamer)):
 				print "Own3d.tv: " + streamer.split('=')[0]
 		return 0
 
+	def parser_twitch(self, user):
+		APIDET = "http://api.justin.tv/api/channel/show/" + user + ".xml"
+		APISTA = "http://api.justin.tv/api/stream/list.xml?channel=" + user #while live
+		bs4parser = BeautifulSoup(urllib.urlopen(APIDET), features = 'xml')
+		
+		if(bs4parser.hash is None):
+			print bs4parser.channel.id.text, bs4parser.channel.title.text
+		elif(bs4parser.hash):
+			print bs4parser.hash.error.text
+
+
 
 
 temp = Streams()
-temp.say_Samo()
-temp.import_list('streams.list')
+#temp.import_list('streams.list')
+temp.parser_twitch('ggnetsheevr')
