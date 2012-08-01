@@ -34,6 +34,7 @@ class Streams:
 		#Some faggots have retarded as fuck titles that need to be cleaned.
 		#sqlite is too fucking retarded to do it on its own as well
 		string = string.replace('"', '')
+		#not for sure if this works but w/e
 		if(type(string) == 'unicode'):
 			return unicodedata.normalize('NFKD', string).encode('ASCII', 'ignore')
 		return string
@@ -154,7 +155,21 @@ class Streams:
 			elif(streamer[1] == 'own3d'):
 				print self.update_own3d_stream(str(streamer[0]))
 
+	def get_live_streams(self):
+		cmd = 'SELECT * from streams WHERE live=1'
+		self.cur.execute(cmd)
+		row = self.cur.fetchall()
+		#returns a list
+		return row
+
+	def get_count(self):
+		cmd = 'SELECT * FROM streams'
+		self.cur.execute(cmd)
+		row = self.cur.fetchall()
+		return len(row)
+
 temp = Streams()
-temp.update_streams()
+#temp.update_streams()
+print temp.get_count()
 #temp.truncateTable()
 #temp.import_list('streams.list')
