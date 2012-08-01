@@ -168,6 +168,16 @@ class Streams:
 		row = self.cur.fetchall()
 		return len(row)
 
+	def parse_for_channel(self, row):
+		out = ''
+		for i in row:
+			if(i):
+				out += i[3] + ' ' + i[4].replace('http://', 'www.') + ' (' + str(i[6]) + ') '
+				# www. to make it clickable in many clients
+		return out
+
+
+#TODO: Find out how to initialize the fucking class inside this.
 
 class StreamsBot(irc.IRCClient):
     def _get_nickname(self):
@@ -175,17 +185,26 @@ class StreamsBot(irc.IRCClient):
     nickname = property(_get_nickname)
 
     def signedOn(self):
+    	self.msg('Q@CServe.quakenet.org', 'auth sigint UAf9pJv8wE')
+    	self.mode(self, True, '+x', user=self.nickname)
         self.join(self.factory.channel)
         print "Signed on as %s." % (self.nickname)
 
     def joined(self, channel):
-        print "Joined %s." % (channel,)
+        print "Joined %s." % (channel)
 
     def privmsg(self, user, channel, msg):
-    	user = user.split('!', 1)[0]
-    	
+    	usernick = user.split('!', 1)[0]
     	if re.match('^.streams$', msg):
-			print user, msg
+    		data = Streams()
+    		self.msg(channel, str(data.parse_for_channel(data.get_live_streams())))
+    	
+    	elif msg == '.update':
+			if re.match('potatoe!alice@kill.yourself.now.doitfaggot.org', user):
+				data = Streams()
+				data.update_streams()
+				self.msg(channel, 'Database updated')
+
 
 class StreamsBotFactory(protocol.ClientFactory):
     protocol = StreamsBot
@@ -213,3 +232,6 @@ if __name__ == '__main__':
 	#reactor.connectTCP('irc.quakenet.org', 6667, f)
     reactor.connectTCP('irc.quakenet.org', 6667, StreamsBotFactory('#test'))
     reactor.run()
+    #temp = Streams()
+    #print temp.parse_for_channel(temp.get_live_streams())
+    #print temp.parse_for_channel(temp.get_live_streams())
