@@ -49,6 +49,7 @@ class Streams:
 				self.parser_twitch(streamer.split('=')[0])
 			elif(re.match('.*=O$', streamer)):
 				print "Own3d.tv: " + streamer.split('=')[0]
+				#self.parser_own3d(streamer.split('=')[0])
 		return 0
 
 	def parser_twitch(self, user):
@@ -64,7 +65,7 @@ class Streams:
 			print 'Working on ' + login 
 			#cmd = "INSERT INTO streams(id, login, title, url) VALUES(" + id + ",'" + login + "','" + title + ","" + url + "")"
 			#cmd = 'INSERT INTO streams(id, login, title, url) VALUES(' + id + ',"' + login + '","' + self.sanitize(title) + '","' + url + '")'
-			self.add_twitch.stream(id, login, title, url)	
+			self.add_twitch_stream(id, login, title, url)	
 		elif(bs4parser.hash):
 			print bs4parser.hash.error.text
 			return 1
@@ -105,14 +106,55 @@ class Streams:
 		#		if it doesn't return 1
 		#		flipped return codes but w/e
 
-		cmd = 'SELECT * FROM streams WHERE id=' + id
+		cmd = 'SELECT * FROM streams WHERE id=' + str(id)
 		self.cur.execute(cmd)
 
+		row = self.cur.fetchone()
+		if(row is None):
+			return 1
+		return 0
+
+	def update_twitch_stream(self, id, login):
+		APISTA = "http://api.justin.tv/api/stream/list.xml?channel=" + login
+		parser = BeautifulSoup(urllib.urlopen(APISTA), features = 'xml')
+
+		if(parser.streams.stream is None):
+			cmd = 'UPDATE streams SET live=0, viewers=0 WHERE id =' + id
+			self.cur.execute(cmd)
+			self.con.commit()
+			return (0, 0)
+		elif(parser.streams.stream.channel_count):
+			cmd = 'UPDATE streams SET live=1, viewers=' + parser.streams.stream.channel_count.text + ' WHERE id=' + id
+			self.cur.execute(cmd)
+			self.con.commit()
+			return (1, parser.streams.stream.channel_count.text)
+
+	def update_own3d_stream(self, id):
+		APISTA = 'http://api.own3d.tv/liveCheck.php?live_id=' + str(id)
+		parser = BeautifulSoup(urllib.urlopen(APISTA), features = 'xml')
+		if(parser.own3dReply.liveEvent.isLive.text == 'false'):
+			cmd = 'UPDATE streams SET live=0, viewers=0 WHERE id =' + id
+			self.cur.execute(cmd)
+			self.con.commit()
+			return (0, 0)
+		elif(parser.own3dReply.liveEvent.isLive.text == 'true'):
+			cmd = 'UPDATE streams SET live=1, viewers=' + parser.own3dReply.liveEvent.liveViewers.text + ' WHERE id=' + id
+			self.cur.execute(cmd)
+			self.con.commit()
+			return (1, parser.own3dReply.liveEvent.liveViewers.text)
+
+	def update_streams(self):
+		cmd = 'SELECT * from streams'
+		self.cur.execute(cmd)
+		row = self.cur.fetchall()
+
+		for streamer in row:
+			if(streamer[1] == 'twitch'):
+				print self.update_twitch_stream(str(streamer[0]), streamer[2])
+			elif(streamer[1] == 'own3d'):
+				print self.update_own3d_stream(str(streamer[0]))
 
 temp = Streams()
-temp.truncateTable()
-temp.parser_own3d('http://www.own3d.tv/EpiCommentary/live/311418', 'EpiCommentary')
+temp.update_streams()
 #temp.truncateTable()
-#temp.add_twitch_stream('99823', 'sing_sing', 'Sing_Sing', 'http://twitch.tv/singsing')
 #temp.import_list('streams.list')
-#temp.parser_twitch('nookiedota')
