@@ -182,7 +182,10 @@ class StreamsBot(irc.IRCClient):
         print "Joined %s." % (channel,)
 
     def privmsg(self, user, channel, msg):
-        print msg
+    	user = user.split('!', 1)[0]
+    	
+    	if re.match('^.streams$', msg):
+			print user, msg
 
 class StreamsBotFactory(protocol.ClientFactory):
     protocol = StreamsBot
@@ -192,11 +195,11 @@ class StreamsBotFactory(protocol.ClientFactory):
         self.nickname = nickname
 
     def clientConnectionLost(self, connector, reason):
-        print "Lost connection (%s), reconnecting." % (reason,)
+        print "Lost connection (%s), reconnecting." % (reason)
         connector.connect()
 
     def clientConnectionFailed(self, connector, reason):
-        print "Could not connect: %s" % (reason,)
+        print "Could not connect: %s" % (reason)
 
 
 #temp = Streams()
