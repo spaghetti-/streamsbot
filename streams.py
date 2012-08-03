@@ -1,6 +1,5 @@
 # Streams bot for twitch.tv and own3d.tv streams.
 # Python 2.7.3
-# TODO: make executable later, as of now run via interpreter directly
 
 from bs4 import BeautifulSoup
 import re, urllib
@@ -61,8 +60,6 @@ class Streams:
 			login = bs4parser.channel.login.text
 			url = 'http://twitch.tv/' + login
 			print 'Working on ' + login 
-			#cmd = "INSERT INTO streams(id, login, title, url) VALUES(" + id + ",'" + login + "','" + title + ","" + url + "")"
-			#cmd = 'INSERT INTO streams(id, login, title, url) VALUES(' + id + ',"' + login + '","' + self.sanitize(title) + '","' + url + '")'
 			self.add_twitch_stream(id, login, title, url)	
 		elif(bs4parser.hash):
 			print bs4parser.hash.error.text
@@ -251,22 +248,9 @@ class StreamsBotFactory(protocol.ClientFactory):
         print "Could not connect: %s" % (reason)
 
 
-#temp = Streams()
-#temp.update_streams()
-#print temp.get_count()
-#temp.truncateTable()
-#temp.import_list('streams.list')
 
 if __name__ == '__main__':
-	#f = StreamsBotFactory('#test')
-	#reactor.connectTCP('irc.quakenet.org', 6667, f)
 	global data
 	data = Streams()
 	reactor.connectTCP('irc.quakenet.org', 6667, StreamsBotFactory('#samo.dota'))
 	reactor.run()
-#	data.add('http://own3d.tv/live/72641 phantomfag')
-#	print data.add('http://twitch.tv/snigsing')
-#	print data.add('http://own3d.tv/live/72641')
-    #temp = Streams()
-    #print temp.parse_for_channel(temp.get_live_streams())
-    #print temp.parse_for_channel(temp.get_live_streams())
