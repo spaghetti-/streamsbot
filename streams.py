@@ -17,14 +17,11 @@ from twisted.internet import protocol, reactor
 import sqlite3 as sqlite
 
 class Streams:
-	_name = "Streams"
-	_version = "0.1"
-	_author = "potatoe"
-
 
 	def __init__(self):
 		self.con = sqlite.connect('streams.db')
 		self.cur = self.con.cursor()
+		self.admin = 'potatoe!alice@kill.yourself.now.doitfaggot.org'
 
 	def say_Samo(self):
 		print "Samo is a fag"
@@ -78,7 +75,7 @@ class Streams:
 		#nothing much to parse since I havent figured out their retarded API
 		#cbb
 		id = url.split("/")[len(url.split("/")) - 1]
-		url = 'http://own3d.tv/live/' + id
+		#url = 'http://own3d.tv/live/' + id
 		self.add_own3d_stream(id, name, url)
 
 	def truncateTable(self):
@@ -156,7 +153,7 @@ class Streams:
 				print self.update_own3d_stream(str(streamer[0]))
 
 	def get_live_streams(self):
-		cmd = 'SELECT * from streams WHERE live=1'
+		cmd = 'SELECT * from streams WHERE live=1 ORDER BY viewers DESC'
 		self.cur.execute(cmd)
 		row = self.cur.fetchall()
 		#returns a list
@@ -172,20 +169,45 @@ class Streams:
 		out = ''
 		for i in row:
 			if(i):
-				out += i[3] + ' ' + i[4].replace('http://', 'www.') + ' (' + str(i[6]) + ') '
+				if(i[1] == 'own3d'):
+					out += i[3] + ' ' + i[4].replace('http://', 'www.') + ' (' + str(i[6]) + ') '
+				out += i[2] + ' ' + i[4].replace('http://', 'www.') + ' (' + str(i[6]) + ') '
 				# www. to make it clickable in many clients
 		return out
 
+	def add(self, link):
+		link = link.replace('.addstream ', '')
+		print link
+		url = urlparse(link.split(' ')[0])
+		print url.hostname, url.path.strip('/')
+		if(url.hostname == 'twitch.tv'):
+			print 'adding: ', url.path.strip('/')
+			#self.parser_twitch(url.path.strip('/'))
+			return 'Added, will update soon'
+		elif(url.hostname == 'own3d.tv'):
+			if(len(link.split(' ')) < 2):
+				return 'Format: http://own3d.tv/live/11111'
+
+			id = url.path.strip('/').split('/')[1]
+			name = link.split(' ')[1]
+			#self.parser_own3d(link.split(' ')[0], name)
+			print 'adding: ', id, name, link.split(' ')[0]
+			return 'Added, will update soon'
+		else:
+			return 'Format of stream url: http://twitch.tv/username OR http://own3d.tv/live/streamid'
 
 #TODO: Find out how to initialize the fucking class inside this.
+#nvm global var data
 
 class StreamsBot(irc.IRCClient):
+
     def _get_nickname(self):
         return self.factory.nickname
+
     nickname = property(_get_nickname)
 
     def signedOn(self):
-    	self.msg('Q@CServe.quakenet.org', 'auth sigint UAf9pJv8wE')
+    	self.msg('Q@CServe.quakenet.org', 'auth user pass')
     	self.mode(self, True, '+x', user=self.nickname)
         self.join(self.factory.channel)
         print "Signed on as %s." % (self.nickname)
@@ -196,14 +218,21 @@ class StreamsBot(irc.IRCClient):
     def privmsg(self, user, channel, msg):
     	usernick = user.split('!', 1)[0]
     	if re.match('^.streams$', msg):
-    		data = Streams()
+    		#data = Streams()
     		self.msg(channel, str(data.parse_for_channel(data.get_live_streams())))
-    	
-    	elif msg == '.update':
-			if re.match('potatoe!alice@kill.yourself.now.doitfaggot.org', user):
-				data = Streams()
+        elif msg == '.update':
+			if re.match(data.admin, user):
+				#data = Streams()
 				data.update_streams()
 				self.msg(channel, 'Database updated')
+			else:
+				self.msg(channel, 'Not sufficient privileges for user %s' % usernick)
+
+        elif(re.match('^.addstream', msg)):
+			if re.match(data.admin, user):
+				self.msg(channel, data.add(msg))
+			else:
+				self.msg(channel, 'MSG %s to add links' % data.admin)
 
 
 class StreamsBotFactory(protocol.ClientFactory):
@@ -230,8 +259,13 @@ class StreamsBotFactory(protocol.ClientFactory):
 if __name__ == '__main__':
 	#f = StreamsBotFactory('#test')
 	#reactor.connectTCP('irc.quakenet.org', 6667, f)
-    reactor.connectTCP('irc.quakenet.org', 6667, StreamsBotFactory('#test'))
-    reactor.run()
+	global data
+	data = Streams()
+	reactor.connectTCP('irc.quakenet.org', 6667, StreamsBotFactory('#test'))
+	reactor.run()
+#	data.add('http://own3d.tv/live/72641 phantomfag')
+#	print data.add('http://twitch.tv/snigsing')
+#	print data.add('http://own3d.tv/live/72641')
     #temp = Streams()
     #print temp.parse_for_channel(temp.get_live_streams())
     #print temp.parse_for_channel(temp.get_live_streams())
