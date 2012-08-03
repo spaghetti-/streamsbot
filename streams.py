@@ -170,8 +170,9 @@ class Streams:
 		for i in row:
 			if(i):
 				if(i[1] == 'own3d'):
-					out += i[3] + ' ' + i[4].replace('http://', 'www.') + ' (' + str(i[6]) + ') '
-				out += i[2] + ' ' + i[4].replace('http://', 'www.') + ' (' + str(i[6]) + ') '
+					out += i[4].replace('http://', 'www.') + '/' + i[3] + ' (' + str(i[6]) + ') '
+				else:
+					out += i[4].replace('http://', 'www.') + ' (' + str(i[6]) + ') '
 				# www. to make it clickable in many clients
 		return out
 
@@ -182,7 +183,7 @@ class Streams:
 		print url.hostname, url.path.strip('/')
 		if(url.hostname == 'twitch.tv'):
 			print 'adding: ', url.path.strip('/')
-			#self.parser_twitch(url.path.strip('/'))
+			self.parser_twitch(url.path.strip('/'))
 			return 'Added, will update soon'
 		elif(url.hostname == 'own3d.tv'):
 			if(len(link.split(' ')) < 2):
@@ -190,7 +191,7 @@ class Streams:
 
 			id = url.path.strip('/').split('/')[1]
 			name = link.split(' ')[1]
-			#self.parser_own3d(link.split(' ')[0], name)
+			self.parser_own3d(link.split(' ')[0], name)
 			print 'adding: ', id, name, link.split(' ')[0]
 			return 'Added, will update soon'
 		else:
@@ -261,7 +262,7 @@ if __name__ == '__main__':
 	#reactor.connectTCP('irc.quakenet.org', 6667, f)
 	global data
 	data = Streams()
-	reactor.connectTCP('irc.quakenet.org', 6667, StreamsBotFactory('#test'))
+	reactor.connectTCP('irc.quakenet.org', 6667, StreamsBotFactory('#samo.dota'))
 	reactor.run()
 #	data.add('http://own3d.tv/live/72641 phantomfag')
 #	print data.add('http://twitch.tv/snigsing')
