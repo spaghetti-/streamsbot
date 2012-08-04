@@ -251,7 +251,7 @@ class StreamsBot(irc.IRCClient):
     	usernick = user.split('!', 1)[0]
     	if re.match('^.streams', msg):
     		#data = Streams()
-			if(data.lock = 0):
+			if(data.lock == 0):
 	    		self.msg(channel, str(data.parse_for_channel(data.get_live_streams())))
 	    		data.lock = 1
 	    	else:
