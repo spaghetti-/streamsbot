@@ -11,7 +11,7 @@ import unicodedata
 #dev-python/twisted-words
 
 from twisted.words.protocols import irc
-from twisted.internet import protocol, reactor
+from twisted.internet import protocol, reactor, task
 
 import sqlite3 as sqlite
 
@@ -276,5 +276,9 @@ class StreamsBotFactory(protocol.ClientFactory):
 if __name__ == '__main__':
 	global data
 	data = Streams('potatoe!alice@kill.yourself.now.doitfaggot.org')
+
+	updateloop = task.LoopingCall(data.update_streams())
+	updateloop.start(300) #every 5 minutes
+
 	reactor.connectTCP('irc.quakenet.org', 6667, StreamsBotFactory('#samo.dota'))
 	reactor.run()
