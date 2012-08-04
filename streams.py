@@ -17,10 +17,11 @@ import sqlite3 as sqlite
 
 class Streams:
 
-	def __init__(self):
+	def __init__(self, user):
 		self.con = sqlite.connect('streams.db')
 		self.cur = self.con.cursor()
-		self.admin = 'potatoe!alice@kill.yourself.now.doitfaggot.org'
+		#admin must be in the form of nick!ident@host.mask
+		self.admin = user
 
 	def say_Samo(self):
 		print "Samo is a fag"
@@ -215,12 +216,11 @@ class StreamsBot(irc.IRCClient):
 
     def privmsg(self, user, channel, msg):
     	usernick = user.split('!', 1)[0]
-    	if re.match('^.streams$', msg):
+    	if re.match('^.streams', msg):
     		#data = Streams()
     		self.msg(channel, str(data.parse_for_channel(data.get_live_streams())))
         elif msg == '.update':
 			if re.match(data.admin, user):
-				#data = Streams()
 				data.update_streams()
 				self.msg(channel, 'Database updated')
 			else:
@@ -250,7 +250,7 @@ class StreamsBotFactory(protocol.ClientFactory):
 
 
 if __name__ == '__main__':
-	global data
+	global data('potatoe!alice@kill.yourself.now.doitfaggot.org')
 	data = Streams()
 	reactor.connectTCP('irc.quakenet.org', 6667, StreamsBotFactory('#samo.dota'))
 	reactor.run()
