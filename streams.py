@@ -151,6 +151,7 @@ class Streams:
 
 		for streamer in row:
 			if(streamer[1] == 'twitch'):
+				print "passing"
 				#print self.update_twitch_stream(str(streamer[0]), streamer[2])
 			elif(streamer[1] == 'own3d'):
 				print self.update_own3d_stream(str(streamer[0]))
