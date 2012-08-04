@@ -150,10 +150,7 @@ class Streams:
 		self.alt_update_twitch_streams()
 
 		for streamer in row:
-			if(streamer[1] == 'twitch'):
-				print "passing"
-				#print self.update_twitch_stream(str(streamer[0]), streamer[2])
-			elif(streamer[1] == 'own3d'):
+			if(streamer[1] == 'own3d'):
 				print self.update_own3d_stream(str(streamer[0]))
 
 	def get_live_streams(self):
@@ -213,7 +210,6 @@ class Streams:
 		
 		APISTA = "http://api.justin.tv/api/stream/list.json?channel=" + slist
 		jsondata = json.loads(urllib.urlopen(APISTA).read())
-		print len(jsondata)
 
 		for livefag in jsondata:
 			login = livefag['channel']['login']
@@ -280,6 +276,5 @@ class StreamsBotFactory(protocol.ClientFactory):
 if __name__ == '__main__':
 	global data
 	data = Streams('potatoe!alice@kill.yourself.now.doitfaggot.org')
-	#reactor.connectTCP('irc.quakenet.org', 6667, StreamsBotFactory('#samo.dota'))
-	#reactor.run()
-	data.alt_update_twitch_streams()
+	reactor.connectTCP('irc.quakenet.org', 6667, StreamsBotFactory('#samo.dota'))
+	reactor.run()
