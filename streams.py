@@ -131,12 +131,12 @@ class Streams:
 	def update_own3d_stream(self, id):
 		APISTA = 'http://api.own3d.tv/liveCheck.php?live_id=' + str(id)
 		parser = BeautifulSoup(urllib.urlopen(APISTA), features = 'xml')
-		if(parser.own3dReply.liveEvent.isLive.text == 'false'):
+		if(parser.own3dReply.liveEvent.liveViewers.text == 0):
 			cmd = 'UPDATE streams SET live=0, viewers=0 WHERE id =' + id
 			self.cur.execute(cmd)
 			self.con.commit()
 			return (0, 0)
-		elif(parser.own3dReply.liveEvent.isLive.text == 'true'):
+		elif(parser.own3dReply.liveEvent.liveViewers.text > 0):
 			cmd = 'UPDATE streams SET live=1, viewers=' + parser.own3dReply.liveEvent.liveViewers.text + ' WHERE id=' + id
 			self.cur.execute(cmd)
 			self.con.commit()
