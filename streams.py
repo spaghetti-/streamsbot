@@ -15,6 +15,9 @@ from twisted.internet import protocol, reactor
 
 import sqlite3 as sqlite
 
+#dev-python/simplejson
+import simplejson as json
+
 class Streams:
 
 	def __init__(self, user):
@@ -143,10 +146,12 @@ class Streams:
 		cmd = 'SELECT * from streams'
 		self.cur.execute(cmd)
 		row = self.cur.fetchall()
+		
+		self.alt_update_twitch_streams()
 
 		for streamer in row:
 			if(streamer[1] == 'twitch'):
-				print self.update_twitch_stream(str(streamer[0]), streamer[2])
+				#print self.update_twitch_stream(str(streamer[0]), streamer[2])
 			elif(streamer[1] == 'own3d'):
 				print self.update_own3d_stream(str(streamer[0]))
 
@@ -194,6 +199,28 @@ class Streams:
 			return 'Added, will update soon'
 		else:
 			return 'Format of stream url: http://twitch.tv/username OR http://own3d.tv/live/streamid'
+
+	def alt_update_twitch_streams(self):
+		cmd = 'SELECT login FROM streams WHERE server="twitch"'
+		self.cur.execute(cmd)
+		row = self.cur.fetchall()
+		slist = ''
+		for streamer in row:
+			slist += streamer[0]
+			slist += ','
+		slist = slist[:-1]
+		
+		APISTA = "http://api.justin.tv/api/stream/list.json?channel=" + slist
+		jsondata = json.loads(urllib.urlopen(APISTA).read())
+		print len(jsondata)
+
+		for livefag in jsondata:
+			login = livefag['channel']['login']
+			viewers = livefag['channel_count']
+			print login, viewers
+			updatecmd = 'UPDATE streams SET live=1, viewers=%d WHERE id="%s"' % (viewers, login)
+			self.cur.execute(updatecmd)
+			self.con.commit()
 
 #TODO: Find out how to initialize the fucking class inside this.
 #nvm global var data
@@ -250,7 +277,8 @@ class StreamsBotFactory(protocol.ClientFactory):
 
 
 if __name__ == '__main__':
-	global data('potatoe!alice@kill.yourself.now.doitfaggot.org')
-	data = Streams()
-	reactor.connectTCP('irc.quakenet.org', 6667, StreamsBotFactory('#samo.dota'))
-	reactor.run()
+	global data
+	data = Streams('potatoe!alice@kill.yourself.now.doitfaggot.org')
+	#reactor.connectTCP('irc.quakenet.org', 6667, StreamsBotFactory('#samo.dota'))
+	#reactor.run()
+	data.alt_update_twitch_streams()
