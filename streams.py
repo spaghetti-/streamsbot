@@ -202,6 +202,11 @@ class Streams:
 		cmd = 'SELECT login FROM streams WHERE server="twitch"'
 		self.cur.execute(cmd)
 		row = self.cur.fetchall()
+
+		offline = 'UPDATE streams SET live=0 WHERE server="twitch"'
+		self.cur.execute(offline)
+		self.con.commit()
+
 		slist = ''
 		for streamer in row:
 			slist += streamer[0]
