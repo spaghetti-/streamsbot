@@ -254,8 +254,8 @@ class StreamsBot(irc.IRCClient):
 			if(data.lock == 0):
 				self.msg(channel, str(data.parse_for_channel(data.get_live_streams())))
 				data.lock = 1
-			else:
-				self.msg(channel, 'There has already been a request in this channel in the past one minute. Scroll up.')
+			#else:
+				#self.msg(channel, 'There has already been a request in this channel in the past one minute. Scroll up.')
         elif msg == '.update':
 			if re.match(data.admin, user):
 				data.update_streams()
