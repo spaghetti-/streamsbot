@@ -220,7 +220,7 @@ class Streams:
 			login = livefag['channel']['login']
 			viewers = livefag['channel_count']
 			print login, viewers
-			updatecmd = 'UPDATE streams SET live=1, viewers=%d WHERE id="%s"' % (viewers, login)
+			updatecmd = 'UPDATE streams SET live=1, viewers=%d WHERE login="%s"' % (viewers, login)
 			self.cur.execute(updatecmd)
 			self.con.commit()
 
