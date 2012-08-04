@@ -25,6 +25,7 @@ class Streams:
 		self.cur = self.con.cursor()
 		#admin must be in the form of nick!ident@host.mask
 		self.admin = user
+		self.lock = 0
 
 	def say_Samo(self):
 		print "Samo is a fag"
@@ -224,6 +225,9 @@ class Streams:
 			self.cur.execute(updatecmd)
 			self.con.commit()
 
+	def primitive_floodprotect(self):
+		self.lock = 0
+
 #TODO: Find out how to initialize the fucking class inside this.
 #nvm global var data
 
@@ -247,7 +251,11 @@ class StreamsBot(irc.IRCClient):
     	usernick = user.split('!', 1)[0]
     	if re.match('^.streams', msg):
     		#data = Streams()
-    		self.msg(channel, str(data.parse_for_channel(data.get_live_streams())))
+			if(data.lock = 0):
+	    		self.msg(channel, str(data.parse_for_channel(data.get_live_streams())))
+	    		data.lock = 1
+	    	else:
+	    		self.msg(channel, 'There has already been a request in this channel in the past one minute. Scroll up.')
         elif msg == '.update':
 			if re.match(data.admin, user):
 				data.update_streams()
@@ -283,7 +291,10 @@ if __name__ == '__main__':
 	data = Streams('potatoe!alice@kill.yourself.now.doitfaggot.org')
 
 	updateloop = task.LoopingCall(data.update_streams)
+	floodprotect = task.LoopingCall(data.primitive_floodprotect)
+
 	updateloop.start(300) #every 5 minutes
+	floodprotect.start(60) #every 1 minutes
 
 	reactor.connectTCP('irc.quakenet.org', 6667, StreamsBotFactory('#samo.dota'))
 	reactor.run()
