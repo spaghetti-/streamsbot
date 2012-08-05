@@ -172,9 +172,11 @@ class Streams:
 		for i in row:
 			if(i):
 				if(i[1] == 'own3d'):
-					out += i[4].replace('http://', 'www.') + '/' + i[3] + ' (' + str(i[6]) + ') '
+					out += i[4].replace('http://', '\x0312' + 'www.') + '/' + i[3] + '\x03 (' + str(i[6]) + ') '
+					#out += i[4].replace('http://', 'www.') + '/' + i[3] + ' (' + str(i[6]) + ') '
 				else:
-					out += i[4].replace('http://', 'www.') + ' (' + str(i[6]) + ') '
+					#out += i[4].replace('http://', 'www.') + ' (' + str(i[6]) + ') '
+					out += i[4].replace('http://', '\x0312' + 'www.') + '\x03 (' + str(i[6]) + ') '
 				# www. to make it clickable in many clients
 		return out
 
